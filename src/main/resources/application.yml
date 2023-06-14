@@ -10,6 +10,7 @@ spring:
       hibernate:
 #        show_sql: true # System.out으로 하이버네이트 출력
         format_sql: true
+        use_sql_comments: true # querydsl 하이버네이트 실행 보기
 logging:
   level:
     org.hibernate.SQL: debug  # debug모드로 하이버네이트 출력
