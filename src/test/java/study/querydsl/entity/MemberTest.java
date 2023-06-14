@@ -10,8 +10,6 @@ import javax.persistence.EntityManager;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 @Transactional
 //@Commit // 테스트 결과 DB 저장하려면 쓰고, 아니면 지우면 됨
