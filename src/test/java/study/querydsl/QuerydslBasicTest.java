@@ -49,12 +49,12 @@ public class QuerydslBasicTest {
 
     // JPQL 버젼
     @Test
-    public void startJPQL(){
+    public void startJPQL() {
         // member1을 찾아라
         String qlstring = "select m from Member m where m.username =:username";
 
         Member findMember = em.createQuery(qlstring, Member.class)
-                .setParameter("username","member1")
+                .setParameter("username", "member1")
                 .getSingleResult();
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
@@ -73,5 +73,25 @@ public class QuerydslBasicTest {
 
         // 장점1. 컴파일 시 오류를 잡아줌
         // 장점2. 파라미터 바인딩을 해결해줌
+    }
+
+    @Test
+    public void search() {
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1")
+                        .and(member.age.eq(10)))
+                .fetchOne();
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    public void searchAndParam() {
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"),
+                        member.age.eq(10))
+                .fetchOne();
+        assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 }
