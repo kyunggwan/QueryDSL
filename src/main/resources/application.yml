@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/test
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+#        show_sql: true # System.out으로 하이버네이트 출력
+        format_sql: true
+logging:
+  level:
+    org.hibernate.SQL: debug  # debug모드로 하이버네이트 출력
+#    org.hibernate.type: trace
