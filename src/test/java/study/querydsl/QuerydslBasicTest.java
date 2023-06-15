@@ -2,6 +2,7 @@ package study.querydsl;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import java.util.List;
 
+import static com.querydsl.jpa.JPAExpressions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static study.querydsl.entity.QMember.member;
 import static study.querydsl.entity.QTeam.team;
@@ -302,7 +304,7 @@ public class QuerydslBasicTest {
      * fetchJoin이 없을 때
      **/
     @PersistenceUnit // 증명할때 사용
-    EntityManagerFactory emf;
+            EntityManagerFactory emf;
 
     @Test
     public void fetchJoinNo() throws Exception {
@@ -336,5 +338,77 @@ public class QuerydslBasicTest {
 
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
         assertThat(loaded).as("페치 조인 적용").isTrue();
+    }
+
+    /**
+     * 서브쿼리
+     * 나이가 가장 많은 회원 조회
+     */
+    @Test
+    public void subQuery() throws Exception {
+
+        // alias가 중복되면 안되기에 만듦
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(   // 서브쿼리
+                        select(memberSub.age.max())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        assertThat(result).extracting("age")
+                .containsExactly(40);
+    }
+
+    /**
+     * 서브쿼리
+     * 나이가 평균 이상인 회원 조회
+     */
+    @Test
+    public void subQueryGoe() throws Exception {
+
+        // alias가 중복되면 안되기에 만듦
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.goe(   // 서브쿼리
+                        select(memberSub.age.avg())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        assertThat(result).extracting("age")
+                .containsExactly(30, 40);
+    }
+
+    /**
+     * 서브쿼리 - select
+     * 유져 평균 나이 출력
+     * jpa 서브 쿼리의 한계점: from 절에 subquery가 안된다
+     * 해결방안 1: 대게 서브쿼리를 join으로 변경 가능
+     * 해결방안 2: 쿼리를 2번 분리해서 실행
+     * 해결방안 3: nativeSQL
+     */
+    @Test
+    public void selectSubQuery() throws Exception {
+
+        // alias가 중복되면 안되기에 만듦
+        QMember memberSub = new QMember("memberSub");
+
+        List<Tuple> result = queryFactory
+                .select(
+                        member.username,
+                        select(memberSub.age.avg())
+                                .from(memberSub))
+                .from(member)
+                .fetch();
+
+        for(Tuple tuple : result){
+            System.out.println("tuple" + tuple);
+        }
+
     }
 }
