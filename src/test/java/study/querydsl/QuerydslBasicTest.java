@@ -3,6 +3,7 @@ package study.querydsl;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -442,6 +443,39 @@ public class QuerydslBasicTest {
                 .fetch();
 
         for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    /**
+     * 상수 추가
+     * */
+    @Test
+    public void constant() throws Exception {
+       List<Tuple> result = queryFactory
+               .select(member.username, Expressions.constant("A"))
+               .from(member)
+               .fetch();
+
+       for (Tuple tuple : result){
+           System.out.println("tuple = " + tuple);
+       }
+    }
+
+    /**
+     * 문자에 추가
+     * */
+    @Test
+    public void concat() throws Exception {
+        List<String> result = queryFactory
+                // 문자가 아닌 다른 타입들을 stringValue()로 문자로 변환
+                // 보통 ENUM을 처리할 때 자주 사용
+                .select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .where(member.username.eq("member1"))
+                .fetch();
+
+        for (String s : result){
             System.out.println("s = " + s);
         }
     }
