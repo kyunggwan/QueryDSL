@@ -13,7 +13,9 @@ import study.querydsl.entity.QMember;
 import study.querydsl.entity.Team;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -128,11 +130,11 @@ public class QuerydslBasicTest {
     }
 
     /**
-     *  회원 정렬 순서
-     *  1. 회원 나이 내림차순
-     *  2. 회원 이름 올림차순
+     * 회원 정렬 순서
+     * 1. 회원 나이 내림차순
+     * 2. 회원 이름 올림차순
      * 이름이 없으면 마지막에 출력(nulls last
-     * */
+     */
     @Test
     public void sort() {
         em.persist(new Member(null, 100));
@@ -224,7 +226,7 @@ public class QuerydslBasicTest {
 
     /**
      * teamA에 속한 모든 회원을 찾아라
-     * */
+     */
     @Test
     public void join() throws Exception {
         List<Member> result = queryFactory
@@ -242,7 +244,7 @@ public class QuerydslBasicTest {
      * 예시로 해봄, 연관관게가 없는 field join
      * 세타 조인
      * 회원의 이름이 팀 이름과 같은 회원 조회
-     * */
+     */
     @Test
     public void theta_join() throws Exception {
         em.persist(new Member("teamA"));
@@ -282,7 +284,7 @@ public class QuerydslBasicTest {
     /**
      * 연관관계 없는 엔티티 외부 조인
      * 회원의 이름이 팀 이름과 같은 대상 외부 조인
-     * */
+     */
     @Test
     public void join_on_no_relation() {
         List<Tuple> result = queryFactory
@@ -296,5 +298,43 @@ public class QuerydslBasicTest {
         }
     }
 
+    /**
+     * fetchJoin이 없을 때
+     **/
+    @PersistenceUnit // 증명할때 사용
+    EntityManagerFactory emf;
 
+    @Test
+    public void fetchJoinNo() throws Exception {
+
+        em.flush(); // 현재까지의 모든 변경사항을 DB에 반영
+        em.clear(); // EntityManager의 상태 초기화, 캐쉬된 엔티티를 비움
+
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("페치 조인 미적용").isFalse();
+    }
+
+    /**
+     * 패치 조인 적용
+     **/
+    @Test
+    public void fetchJoinUse() throws Exception {
+
+        em.flush(); // 현재까지의 모든 변경사항을 DB에 반영
+        em.clear(); // EntityManager의 상태 초기화, 캐쉬된 엔티티를 비움
+
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("페치 조인 적용").isTrue();
+    }
 }
