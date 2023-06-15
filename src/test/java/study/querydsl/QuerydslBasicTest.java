@@ -127,7 +127,7 @@ public class QuerydslBasicTest {
                 .fetchCount();
     }
 
-    /*
+    /**
      *  회원 정렬 순서
      *  1. 회원 나이 내림차순
      *  2. 회원 이름 올림차순
@@ -152,7 +152,6 @@ public class QuerydslBasicTest {
         assertThat(member5.getUsername()).isEqualTo("member5");
         assertThat(member6.getUsername()).isEqualTo("member6");
         assertThat(memberNull.getUsername()).isNull();
-
     }
 
     @Test
@@ -165,7 +164,6 @@ public class QuerydslBasicTest {
                 .fetch();
         assertThat(result.size()).isEqualTo(2);
     }
-
 
     // 전체 조회수 보기
     @Test
@@ -180,7 +178,6 @@ public class QuerydslBasicTest {
         assertThat(QueryResults.getLimit()).isEqualTo(2);
         assertThat(QueryResults.getOffset()).isEqualTo(1);
         assertThat(QueryResults.getResults().size()).isEqualTo(2);
-
     }
 
     @Test
@@ -202,7 +199,6 @@ public class QuerydslBasicTest {
         assertThat(tuple.get(member.age.max())).isEqualTo(40);
         assertThat(tuple.get(member.age.min())).isEqualTo(10);
         assertThat(tuple.get(member.age.avg())).isEqualTo(25);
-
     }
 
     /**
@@ -226,7 +222,7 @@ public class QuerydslBasicTest {
         assertThat(teamB.get(member.age.avg())).isEqualTo(35);
     }
 
-    /*
+    /**
      * teamA에 속한 모든 회원을 찾아라
      * */
     @Test
@@ -242,7 +238,8 @@ public class QuerydslBasicTest {
                 .containsExactly("member1", "member2");
     }
 
-    /* 예시로 해봄, 연관관게가 없는 field join
+    /**
+     * 예시로 해봄, 연관관게가 없는 field join
      * 세타 조인
      * 회원의 이름이 팀 이름과 같은 회원 조회
      * */
@@ -262,8 +259,7 @@ public class QuerydslBasicTest {
                 .containsExactly("teamA", "teamB");
     }
 
-
-    /*
+    /**
      * 예) 회원과 팀을 조인하면서, 팀 이름이 teamA인 팀만 조인, 회원은 모두 조회
      * JPQL 문법 예시
      * select m, t from Member m left join m.team t on t.name = 'teamA'
@@ -283,8 +279,7 @@ public class QuerydslBasicTest {
         }
     }
 
-
-    /*
+    /**
      * 연관관계 없는 엔티티 외부 조인
      * 회원의 이름이 팀 이름과 같은 대상 외부 조인
      * */
@@ -300,4 +295,6 @@ public class QuerydslBasicTest {
             System.out.println("tuple" + tuple);
         }
     }
+
+
 }
