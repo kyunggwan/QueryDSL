@@ -206,8 +206,8 @@ public class QuerydslBasicTest {
     }
 
     /**
-     *팀의 이름과 각 팀의 평균 연령을 구해라.
-    **/
+     * 팀의 이름과 각 팀의 평균 연령을 구해라.
+     **/
     @Test
     public void group() throws Exception {
         List<Tuple> result = queryFactory
@@ -227,8 +227,8 @@ public class QuerydslBasicTest {
     }
 
     /*
-    * teamA에 속한 모든 회원을 찾아라
-    * */
+     * teamA에 속한 모든 회원을 찾아라
+     * */
     @Test
     public void join() throws Exception {
         List<Member> result = queryFactory
@@ -243,9 +243,9 @@ public class QuerydslBasicTest {
     }
 
     /* 예시로 해봄, 연관관게가 없는 field join
-    * 세타 조인
-    * 회원의 이름이 팀 이름과 같은 회원 조회
-    * */
+     * 세타 조인
+     * 회원의 이름이 팀 이름과 같은 회원 조회
+     * */
     @Test
     public void theta_join() throws Exception {
         em.persist(new Member("teamA"));
@@ -260,5 +260,44 @@ public class QuerydslBasicTest {
         assertThat(result)
                 .extracting("username")
                 .containsExactly("teamA", "teamB");
+    }
+
+
+    /*
+     * 예) 회원과 팀을 조인하면서, 팀 이름이 teamA인 팀만 조인, 회원은 모두 조회
+     * JPQL 문법 예시
+     * select m, t from Member m left join m.team t on t.name = 'teamA'
+     */
+    @Test
+    public void join_on_filtering() {
+        // tuple인 이유: select가 여러가지 타입(member, team)
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(member.team, team)
+                .on(team.name.eq("teamA")) // leftJoin시 조건
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple" + tuple);
+        }
+    }
+
+
+    /*
+     * 연관관계 없는 엔티티 외부 조인
+     * 회원의 이름이 팀 이름과 같은 대상 외부 조인
+     * */
+    @Test
+    public void join_on_no_relation() {
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(team).on(member.username.eq(team.name))
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple" + tuple);
+        }
     }
 }
