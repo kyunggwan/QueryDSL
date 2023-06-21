@@ -13,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
 import study.querydsl.dto.UserDto;
 import study.querydsl.entity.Member;
+
+
 import study.querydsl.entity.QMember;
 import study.querydsl.entity.Team;
 
@@ -523,7 +526,8 @@ public class QuerydslBasicTest {
     }
 
     /**
-     * QueryDSL
+     * QueryDSL은 아래 3가지 방법을 지원한다
+     * 1. 프로퍼티 접근
      * 기본생성자에 setter를 통해서 주입
      **/
     @Test
@@ -543,6 +547,7 @@ public class QuerydslBasicTest {
 
     /**
      * QueryDSL
+     * 2. 필드 직접 접근
      * Field에 바로 주입
      **/
     @Test
@@ -562,6 +567,7 @@ public class QuerydslBasicTest {
 
     /**
      * QueryDSL
+     * 3. 생성자 사용
      * 생성자에 주입
      **/
     @Test
@@ -580,8 +586,10 @@ public class QuerydslBasicTest {
     }
 
     /**
-     *  field. setter의 경우 이름 매칭이 중요
-     *  allias. subquery시 방법
+     * 3-1. 생성자 주입방식에 QueryProjection 까지 지원한다
+     * field. setter의 경우 이름 매칭이 중요
+     * allias. subquery시 방법
+     * 단점 : dto도 querydsl의존, 의존도가 높아짐
      */
     @Test
     public void findUserDto() {
@@ -616,4 +624,21 @@ public class QuerydslBasicTest {
         }
     }
 
+    /**
+     *  위의 함수와 차이
+     *  타입 미스가 난다
+     *  위의 constructor는 실행해서 앎(런타임 오류)
+     *  아래는 compile 시점에 타입 미스로 앎
+     */
+    @Test
+    public void findDtoByQueryProjection() throws Exception {
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
 }
