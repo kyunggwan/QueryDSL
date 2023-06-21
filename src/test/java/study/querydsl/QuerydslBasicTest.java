@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
 import study.querydsl.dto.QMemberDto;
@@ -649,7 +650,7 @@ public class QuerydslBasicTest {
      * 동적 쿼리를 해결하는 두가지 방식
      * 1. BooleanBuilder
      * 2. Where 다중 파라미터 사용
-     *
+     * <p>
      * 1. BooleanBuilder
      */
     @Test
@@ -725,8 +726,82 @@ public class QuerydslBasicTest {
         return usernameEq(usernameCond).and(ageEq(ageCond));
     }
 
-    // 광고 상태 isServicable, 날짜가 IN
+//  예시 : 광고 상태 isServicable, 날짜가 IN
 //    private BooleanExpression isServicable(String usernameCond, Integer ageCond) {
 //        return isValid(usernameCond).and(DateBetweenIn(ageCond));
 //    }
+
+    /**
+     * 수정, 삭제 배치 쿼리
+     * 쿼리 한번으로 대량 데이터 수정
+     */
+    @Test
+    @Commit
+    public void bulkUpdate() throws Exception {
+
+        // member1 = 10 -> 비회원으로 변경
+        // member2 = 20 -> 비회원으로 변경
+        // member3 = 30 -> 유지
+        // member4 = 40 -> 유지
+        /**
+         * 1. DB와 영속성 컨텍스트 값이 달라진다
+         * 영속성 컨텍스트에는 member1, member2, member3, member4 다
+         * 쿼리를 실행한다고 영속성 컨텍스트가 수정되는게 아님
+         * DB가 비회원, 비회원, member3, member4 다
+         */
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28)) //멤버 나이가 28미만이면 이름을 비회원으로 바꾼다
+                .execute();
+        /**
+         * 2. 영속성 컨텍스트가 우선임
+         * Member를 조회하면
+         * 비회원, 비회원, member3, member4 가 가져와짐
+         * 하지만 영속성 컨텍스트는
+         * member1, member2, member3, member4 상태임
+         * 영속성 컨텍스트가 우선순위 이므로
+         * member1, member2, member3, member4가 가져와짐
+         */
+
+        /**
+         * 4. 그러므로 영속성 컨텍스트를 초기화 하자
+         * 5. 다시 실행하면 변환된 내용으로 출력
+         */
+        em.flush();
+        em.clear();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+        // 3. 확인해보면 DB와 다른 내용이 출력 = 영속성 컨텍스트의 내용
+        for (Member member1 : result) {
+            System.out.println("member = " + member1);
+        }
+    }
+
+    /**
+     * 더하기, 곱하기
+     */
+    @Test
+    public void buldAdd() {
+        long count = queryFactory
+                .update(member)
+//                .set(member.age, member.age.add(1)) // 모두의 나이를 1 더함
+                .set(member.age, member.age.multiply(2)) // 모두의 나이를 2 곱함
+                .execute();
+    }
+
+    /**
+     * 삭제
+     */
+    @Test
+    public void bulkDelete() {
+        queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+    }
+
+
 }
