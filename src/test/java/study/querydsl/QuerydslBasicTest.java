@@ -3,7 +3,9 @@ package study.querydsl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -647,6 +649,8 @@ public class QuerydslBasicTest {
      * 동적 쿼리를 해결하는 두가지 방식
      * 1. BooleanBuilder
      * 2. Where 다중 파라미터 사용
+     *
+     * 1. BooleanBuilder
      */
     @Test
     public void dynamicQuery_BooleanBuilder() throws Exception {
@@ -672,13 +676,57 @@ public class QuerydslBasicTest {
 
         /**
          * 동적 쿼리
+         * 메인쿼리 부분
          * name만 있는 경우, name으로만 검색
          * name, age가 있는 경우, name, age로 검색
          */
-        /
         return queryFactory
                 .selectFrom(member)
                 .where(builder)
                 .fetch();
     }
+
+    /**
+     * 2. Where 다중 파라미터
+     * where조건에 null값은 무시된다.
+     * 메서드를 다른 쿼리에서도 재활용 할 수 있다
+     * 쿼리 자체의 가독성이 높아진다
+     */
+    @Test
+    public void dynamicQuery_WhereParam() throws Exception {
+        // 초기값 세팅
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+
+        List<Member> result = searchMember2(usernameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember2(String usernameCond, Integer ageCond) {
+        // where 다중파라미터는 메인쿼리가 먼저 나옴
+        // 동적 쿼리를 쓰는지 더 파악하기 쉽다고 함
+        return queryFactory
+                .selectFrom(member)
+//                .where(usernameEq(usernameCond), ageEq(ageCond))
+                .where(allEq(usernameCond, ageCond))
+                .fetch();
+    }
+
+    private BooleanExpression usernameEq(String usernameCond) {
+        return usernameCond != null ? member.username.eq(usernameCond) : null;
+    }
+
+    private BooleanExpression ageEq(Integer ageCond) {
+        return ageCond != null ? member.age.eq(ageCond) : null;
+    }
+
+    // 장점: 이렇게 조립해서 씀!!, 쿼리 조합!
+    private BooleanExpression allEq(String usernameCond, Integer ageCond) {
+        return usernameEq(usernameCond).and(ageEq(ageCond));
+    }
+
+    // 광고 상태 isServicable, 날짜가 IN
+//    private BooleanExpression isServicable(String usernameCond, Integer ageCond) {
+//        return isValid(usernameCond).and(DateBetweenIn(ageCond));
+//    }
 }
