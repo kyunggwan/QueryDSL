@@ -754,6 +754,14 @@ public class QuerydslBasicTest {
                 .set(member.username, "비회원")
                 .where(member.age.lt(28)) //멤버 나이가 28미만이면 이름을 비회원으로 바꾼다
                 .execute();
+
+        /**
+         * 4. 그러므로 영속성 컨텍스트를 초기화 하자
+         * 5. 다시 실행하면 변환된 내용으로 출력
+         */
+        em.flush();
+        em.clear();
+
         /**
          * 2. 영속성 컨텍스트가 우선임
          * Member를 조회하면
@@ -763,14 +771,6 @@ public class QuerydslBasicTest {
          * 영속성 컨텍스트가 우선순위 이므로
          * member1, member2, member3, member4가 가져와짐
          */
-
-        /**
-         * 4. 그러므로 영속성 컨텍스트를 초기화 하자
-         * 5. 다시 실행하면 변환된 내용으로 출력
-         */
-        em.flush();
-        em.clear();
-
         List<Member> result = queryFactory
                 .selectFrom(member)
                 .fetch();
