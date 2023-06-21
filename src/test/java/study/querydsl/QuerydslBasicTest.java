@@ -1,5 +1,6 @@
 package study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
@@ -625,10 +626,10 @@ public class QuerydslBasicTest {
     }
 
     /**
-     *  위의 함수와 차이
-     *  타입 미스가 난다
-     *  위의 constructor는 실행해서 앎(런타임 오류)
-     *  아래는 compile 시점에 타입 미스로 앎
+     * 위의 함수와 차이
+     * 타입 미스가 난다
+     * 위의 constructor는 실행해서 앎(런타임 오류)
+     * 아래는 compile 시점에 타입 미스로 앎
      */
     @Test
     public void findDtoByQueryProjection() throws Exception {
@@ -640,5 +641,44 @@ public class QuerydslBasicTest {
         for (MemberDto memberDto : result) {
             System.out.println("memberDto = " + memberDto);
         }
+    }
+
+    /**
+     * 동적 쿼리를 해결하는 두가지 방식
+     * 1. BooleanBuilder
+     * 2. Where 다중 파라미터 사용
+     */
+    @Test
+    public void dynamicQuery_BooleanBuilder() throws Exception {
+        String usernameParam = "member1";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember1(usernameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+
+        // 파라미터가 존재하면 해당 파라미터가 들어감
+        BooleanBuilder builder = new BooleanBuilder();
+        // 유저가 비면 안되는 경우 이렇게 초기값 세팅도 가능
+        // BooleanBuilder builder = new BooleanBuilder(member.username.eq(usernameCond));
+        if (usernameCond != null) {
+            builder.and(member.username.eq(usernameCond));
+        }
+        if (ageCond != null) {
+            builder.and(member.age.eq(ageCond));
+        }
+
+        /**
+         * 동적 쿼리
+         * name만 있는 경우, name으로만 검색
+         * name, age가 있는 경우, name, age로 검색
+         */
+        /
+        return queryFactory
+                .selectFrom(member)
+                .where(builder)
+                .fetch();
     }
 }
