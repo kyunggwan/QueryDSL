@@ -803,5 +803,35 @@ public class QuerydslBasicTest {
                 .execute();
     }
 
+    @Test
+    public void sqlFunction() throws Exception {
+        List<String> result = queryFactory
+                .select(Expressions.asString(
+                        Expressions.stringTemplate(
+                                "function('replace', {0}, {1}, {2})",   // 0,1,2는 각각 m.username, member, M
+                                member.username, "member", "M")))
+                .from(member)
+                .fetch();
+
+        for( String s : result){
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    public void sqlFunction2() throws Exception {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+//                .where(member.username.eq(
+//                        Expressions.stringTemplate("function('replace', {0}, {1})", member.username, "from", "to")))
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
 
 }
