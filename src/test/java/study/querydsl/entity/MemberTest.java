@@ -3,7 +3,6 @@ package study.querydsl.entity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -35,14 +34,14 @@ class MemberTest {
         em.persist(member2);
         em.persist(member3);
         em.persist(member4);
-    // 초기화
+        // 초기화
         em.flush();
         em.clear();
 
         List<Member> members = em.createQuery("select m from Member m", Member.class).getResultList();
 
         // Test코드에서는 Assert로 검증해야 함. 단순 예제라 sout으로 출력
-        for(Member member : members){
+        for (Member member : members) {
             System.out.println("member=" + member);
             System.out.println("--> member.team=" + member.getTeam());
         }
