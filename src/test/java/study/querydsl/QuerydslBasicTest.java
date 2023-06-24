@@ -3,7 +3,6 @@ package study.querydsl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -12,13 +11,10 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
-import study.querydsl.dto.MemberDto;
-import study.querydsl.dto.QMemberDto;
-import study.querydsl.dto.UserDto;
+import study.querydsl.dto.*;
 import study.querydsl.entity.Member;
 
 
@@ -813,7 +809,7 @@ public class QuerydslBasicTest {
                 .from(member)
                 .fetch();
 
-        for( String s : result){
+        for (String s : result) {
             System.out.println("s = " + s);
         }
     }
@@ -832,6 +828,4 @@ public class QuerydslBasicTest {
             System.out.println("s = " + s);
         }
     }
-
-
 }
